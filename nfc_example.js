@@ -18,88 +18,111 @@
 var fs = require('fs')
   , ref = require('ref')
   , ffi = require('ffi') 
+  , Struct = require('ref-struct');
 
+//
 // typedef
+//
+
+var unknownObj = ref.types.void;
+var voidPointer = ref.refType(unknownObj);
+
+// types defined in nfc-types.h
+//
+// a struct containing details of the NFC device. nfc_connect() returns a pointer to this type of struct
+var nfc_device_t = Struct({
+  'pdc' : 'pointer', // fcn ptr to callbacks
+  'acName' : 'string', // name of device, maxlen DEVICE_NAME_LENGTH
+  'nc': 'int', // int or long or short?? its actually typedef enum{NC_PN531=0x10,NC_PN532=0x20,NC_PN533=0x30} nfc_chip_t;
+  'nds' : 'pointer',  // // Device connection specification - typdedef void ptr
+  'bActive' : 'bool',
+  'bCrc' : 'bool',
+  'bPar' : 'bool',
+  'bEasyFraming' : 'bool',
+  'bAutoIso14443_4' : 'bool',
+  'ui8TxBits' : 'byte',     // actually typedef uint8_t 
+  'ui8Parameters' : 'byte', // also a uint8_t
+  'btSupportByte' : 'byte',
+  'iLastError' : 'int'
+});
+var nfc_device_t_ptr = ref.refType(nfc_device_t); 
+
+// a union of all the nfc device types
+// nfc_target_info_t
+
+//
+// Declare public functions of the libnfc C library libnfc and libnfcutils
+//
+var myLibNfc = ffi.Library('libnfc', {
+  "nfc_version": [ "string", [] ]
+});
+
+// Display libnfc version
+var nfcVersion = myLibNfc.nfc_version();
+console.log('this program uses libnfc library version ' + nfcVersion );
 
 
 
 
-/* ==== SQLITE EXAMPLE
 
-var dbName = process.argv[2] || 'test.sqlite3'
 
-// "ref" types that the sqlite3 functions will use.
+/* ==== EXAMPLE
 
-var sqlite3 = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
-  , sqlite3Ptr = ref.refType(sqlite3)
-  , sqlite3PtrPtr = ref.refType(sqlite3Ptr)
-  , sqlite3_exec_callback = 'pointer' // TODO: use ffi.Callback when #76 is implemented
-  , stringPtr = ref.refType('string')
+double    do_some_number_fudging(double a, int b);
+myobj *   create_object();
+double    do_stuff_with_object(myobj *obj);
+void      use_string_with_object(myobj *obj, char *value);
+void      delete_object(myobj *obj);
 
-// create FFI'd versions of the libsqlite3 function we're interested in
-var SQLite3 = ffi.Library('libsqlite3', {
-  'sqlite3_libversion': [ 'string', [ ] ],
-  'sqlite3_open': [ 'int', [ 'string', sqlite3PtrPtr ] ],
-  'sqlite3_close': [ 'int', [ sqlite3Ptr ] ],
-  'sqlite3_changes': [ 'int', [ sqlite3Ptr ]],
-  'sqlite3_exec': [ 'int', [ sqlite3Ptr, 'string', sqlite3_exec_callback, 'void *', stringPtr ] ],
-})
+// -----------------------------------------------------
+// Our C code would be something like this:
 
-// print out the "libsqlite3" version number
-console.log('Using libsqlite3 version %j...', SQLite3.sqlite3_libversion())
+#include "mylibrary.h"
+int main()
+{
+    myobj *fun_object;
+    double res, fun;
 
-// create a storage area for the db pointer SQLite3 gives us
-var db = ref.alloc(sqlite3PtrPtr)
+    res = do_some_number_fudging(1.5, 5);
+    fun_object = create_object();
 
-// open the database object
-console.log('Opening %j...', dbName)
-SQLite3.sqlite3_open(dbName, db)
+    if (fun_object == NULL) {
+      printf("Oh no! Couldn't create object!\n");
+      exit(2);
+    }
 
-// we don't care about the `sqlite **`, but rather the `sqlite *` that it's
-// pointing to, so we must deref()
-db = db.deref()
-
-// execute a couple SQL queries to create the table "foo" and ensure it's empty
-console.log('Creating and/or clearing foo table...')
-SQLite3.sqlite3_exec(db, 'CREATE TABLE foo (bar VARCHAR);', null, null, null)
-SQLite3.sqlite3_exec(db, 'DELETE FROM foo;', null, null, null)
-
-// execute a few INSERT queries into the "foo" table
-console.log('Inserting bar 5 times...')
-for (var i = 0; i < 5; i++) {
-  SQLite3.sqlite3_exec(db, 'INSERT INTO foo VALUES(\'baz' + i + '\');', null, null, null)
+    use_string_with_object(fun_object, "Hello World!");
+    fun = do_stuff_with_object(fun_object);
+    delete_object(fun_object);
 }
+// ----------------------------------------------------
+// The JavaScript code to wrap this library would be:
 
-// we can also run queries asynchronously on the thread pool. this is good for
-// when you expect a query to take a long time. when running SELECT queries, you
-// pass a callback function that gets invoked for each record found. since we're
-// running asynchronously, you pass a second callback function that will be
-// invoked when the query has completed.
-var rowCount = 0
-var callback = ffi.Callback('int', ['void *', 'int', stringPtr, stringPtr], function (tmp, cols, argv, colv) {
-  var obj = {}
+var ffi = require("ffi");
 
-  for (var i = 0; i < cols; i++) {
-    var colName = colv.deref()
-    var colData = argv.deref()
-    obj[colName] = colData
-  }
+// typedefs
+var myobj = ref.types.void // we don't know what the layout of "myobj" looks like
 
-  console.log('Row: %j', obj)
-  rowCount++
+var libmylibrary = ffi.Library('libmylibrary', {
+  "do_some_number_fudging": [ 'double', [ 'double', 'int' ] ],
+  "create_object": [ "pointer", [] ],
+  "do_stuff_with_object": [ "double", [ "pointer" ] ],
+  "use_string_with_object": [ "void", [ "pointer", "string" ] ],
+  "delete_object": [ "void", [ "pointer" ] ]
+});
 
-  return 0
-})
+// -----------------------------------------------------
+// We could then use it from JavaScript:
 
-var b = new Buffer('test')
-SQLite3.sqlite3_exec.async(db, 'SELECT * FROM foo;', callback, b, null, function (err, ret) {
-  if (err) throw err
-  console.log('Total Rows: %j', rowCount)
-  console.log('Changes: %j', SQLite3.sqlite3_changes(db))
-  console.log('Closing...')
-  SQLite3.sqlite3_close(db)
-  fs.unlinkSync(dbName)
-  fin = true
-})
+var res = MyLibrary.do_some_number_fudging(1.5, 5);
+var fun_object = MyLibrary.create_object();
+
+if (fun_object.isNull()) {
+    console.log("Oh no! Couldn't create object!\n");
+} else {
+    MyLibrary.use_string_with_object(fun_object, "Hello World!");
+    var fun = MyLibrary.do_stuff_with_object(fun_object);
+    MyLibrary.delete_object(fun_object);
+}
 
 */
