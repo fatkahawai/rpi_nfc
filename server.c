@@ -1,11 +1,20 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
+/* 
+ * SERVER.C
+ * A simple server using TCP via sockets
+ * The port number is passed as an argument
+ *   
+ * The server waits for connections from a client, then pushes messages over the socket
+ *
+ * (C) 2013 Fatkahawai
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 
 void error(const char *msg)
@@ -18,25 +27,28 @@ int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno;
      socklen_t clilen;
-     char buffer[256];
+     char buffer[256], wbuffer[256];
      struct sockaddr_in serv_addr, cli_addr;
      int i, n;
-     int number_of_responses;
+     struct timeval tod1, tod2;
 
-     if (argc < 3) {
-         fprintf(stderr,"usage: server port number_of_responses\n");
+
+     if (argc < 2) {
+         fprintf(stderr,"usage: port\n");
          exit(1);
      }
-     portno = atoi(argv[1]);
-     number_of_responses = atoi(argv[2]);
-     printf("starting socket server on port %d to handle max %d requests\n",portno,number_of_responses);
+     if((portno = atoi(argv[1])) == 0) 
+         error("input error - invalid port number (0)");
+
+     printf("starting socket server on port %d\n",portno);
 
      // create a TCP socket
      sockfd = socket(AF_INET,     // Internet protocol family
-                     SOCK_STREAM, // use TCP (use SOCK_DGRAM for UDP)
+                     SOCK_STREAM, // use TCP (use SOCK_DGRAM for UDP) 
                      0);          // default protocol
      if (sockfd < 0) 
-        error("ERROR opening socket");
+        error("failed to open socket");
+
 
      // assign an address to the socket.
      bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -46,7 +58,7 @@ int main(int argc, char *argv[])
 
      if (bind(sockfd, (struct sockaddr *) &serv_addr,  
               sizeof(serv_addr)) < 0) 
-              error("ERROR on binding");
+              error("failed to bind to socket");
 
      // listen on socket for connection reqeusts from clients    
      listen(sockfd,5);
@@ -58,36 +70,59 @@ int main(int argc, char *argv[])
                  (struct sockaddr *) &cli_addr, 
                  &clilen);
      if (newsockfd < 0) 
-          error("ERROR accepting connection request from client");
+          error("failed accepting connection request from client");
 
      char str[INET_ADDRSTRLEN];
      inet_ntop(AF_INET, &(cli_addr.sin_addr), str, INET_ADDRSTRLEN);
 
      printf("accepted connection request from client at %s:%d\n", str, portno); // ntohs(cli_addr.sin_port));
 
-     for( i=0 ; i < number_of_responses ; i++ ){
-       // wait for the client to send us a message
+     // set socket to non-blocking
+     if( fcntl( sockfd, F_SETFL, O_NONBLOCK ) < 0 )
+        error("failed to set socket to non-blocking");
+
+
+     gettimeofday(&tod1, NULL);  //set timer reference point to now
+
+     while( 1 ){
+
+      char message[255];
+
+      // non-blocking read of socket
+    //  bzero(buffer,256);
+//      if( rcv( newsockfd, buffer, 255, MSG_DONTWAIT) < 0 )
+         // nothing in socket in buffer
+
+       
+       // check if the client sent us a message
        bzero(buffer,256);
        n = read(newsockfd,buffer,255);
-       if (n < 0) error("ERROR reading from socket");
-       
-       if( n == 0 ) {
-         printf("Received zero-length message, ignoring\n");
-         continue;
+       if (n < 0) error("ERROR reading from socket");       
+       if( n > 0 ) {
+        printf("Received polling request %d (%d bytes): %s\n", i, n, buffer);
+
+        printf("Sending ACK to client\n");
+        n = write(newsockfd,"ACK",3);
+        if (n < 0) error("ERROR writing to socket");
        }
-       // display received message
-       printf("Received request %d (%d bytes): %s\n", i, n, buffer);
 
-       char responseStr[80];
-       if( i < (number_of_responses) )
-         sprintf(responseStr,"RESPONSE %d",i);
-       else
-         sprintf(responseStr,"CLOSE");
+       // Send a push message to the client every 3sec
 
-       printf("Sending response [%s]\n", responseStr);
+       gettimeofday(&tod2, NULL); 
+       if ((( tod2.tv_sec - tod1.tv_sec )/ 20) == 0 ){
+         gettimeofday(&tod1, NULL); // reset reference to now
 
-       n = write(newsockfd,responseStr,strlen(responseStr));
-       if (n < 0) error("ERROR writing to socket");
+         if (n < 0) error("ERROR reading from stdin");       
+         if ( n > 0) {
+           sprintf(wbuffer,"Hello World! (Msg No. %d)",i++);
+
+           printf("Sending push message to client [%s]\n", wbuffer);
+
+           n = write(newsockfd,wbuffer,strlen(wbuffer));
+           if (n < 0) error("ERROR writing to socket");
+         }
+       }
+
      }
 
      // close socket

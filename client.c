@@ -1,3 +1,12 @@
+/* 
+ * CLIENT.C
+ * A simple client using TCP via sockets
+ * The host and port number of the server is passed as an argument
+ *   
+ * The client connects to the remote server, then sends messages over the socket
+ *
+ * (C) 2013 Fatkahawai
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
