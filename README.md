@@ -1,21 +1,15 @@
 README
 
-NFC_SERVER and RPI_CLIENT
+RPI_NFC
 
-an example of an app server in Node & Express that provides: 
+an example of a TCP client that connects to a remote server, then polls a NFC card for transactions and sends these records to the server as TCP messages, and waits for an ACK from the server
 
-1. a socket server
-- accepts TCP connections from a client implemented on the Raspberry Pi
-- accepts messages from the client which contain NFC transactions and status events 
+to compile:
+ >  gcc client.c - o client
 
-2. a web server and RESTful API which:
-- serves a webapp to web clients to monitor NFC activity 
-- accepts Ajax reqeusts from that webapp to display NFC transaction data. API calls respond to a request by returnig a JSON object which can be directly referenced.
+ to start, open terminal window and run client with the hostname and ort number as argument
+ > client localhost 3000
 
-to start, open terminal window and run node with the myapi.js file as argument
-    > node myapi.js
+this starts the client which connects to port 3000 on localhost
 
-this starts the http server using port 3000
-
-When a user now browses to http://<hostname>:3000, index.html will be loaded to the browser (served by the express webserver implemented in myapi.js) 
-
+(C) 2013 Fatkahawai
