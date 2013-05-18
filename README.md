@@ -12,4 +12,5 @@ to compile:
 
 this starts the client which connects to port 3000 on localhost
 
-(C) 2013 Fatkahawai
+Copyright (c) 2013 Pink Pelican NZ Ltd <bob@pink-pelican.com>
+

@@ -1,12 +1,14 @@
 /* 
- * CLIENT.C
- * A simple client using TCP via sockets
+ * @file client.c
+ * @brief A simple client using TCP via sockets
+ *
  * The host and port number of the server is passed as an argument
  *   
  * The client connects to that remote server, then sends messages over the socket
  * and listens for an ACK from server.
  *
- * (C) 2013 Fatkahawai
+ * @author Robert Drummond
+ * Copyright (c) 2013 Pink Pelican NZ Ltd <bob@pink-pelican.com>
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +22,8 @@
 // GLOBALS
 int sockfd = -1;
 
+// Error handler
+//
 void error(const char *msg)
 {
     perror(msg);
@@ -29,6 +33,8 @@ void error(const char *msg)
     exit(0);
 }
 
+// main
+//
 int main(int argc, char *argv[])
 {
     int portno, n;
