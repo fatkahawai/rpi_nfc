@@ -40,7 +40,7 @@ void stop_polling (int sig)
     nfc_abort_command (pnd);
   else
     exit (EXIT_FAILURE);
-  printf("NFC polling aborted\n");
+  printf("\nNFC polling aborted\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -101,8 +101,8 @@ int pollNFC( nfc_target *pTarget ){
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
     nfc_perror (pnd, "nfc_initiator_poll_target");
-    nfc_close (pnd);
-    nfc_exit (NULL);
+    // nfc_close (pnd);
+    // nfc_exit (NULL);
     return(-1); // exit (EXIT_FAILURE);
   }
   return(res);
