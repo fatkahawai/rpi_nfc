@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wiringPi.h>
+#include <time.h>
 
 #include "led_driver.h"
 
@@ -33,13 +34,13 @@ int main (int argc, char *argv[])
 
   printf ("Raspberry Pi blink pin %d\n", pin) ;
 
-  ledSetup();
+  initLED();
   
   for(;;)
   {
-    ledOn();
+    turnOnLED();
     delay(500);
-    ledOff();
+    turnOffLED();
     delay(500);
   }
 }
