@@ -22,7 +22,7 @@ int main (int argc, char *argv[])
 {
   int pin = 0;
   if  (argc < 2 ){
-    printf("usage: blink <pin 0 - 7>\n");
+    printf("usage: %s <pin 0 - 7>\n",argv[0]);
     exit(1);
   }
   
@@ -32,11 +32,11 @@ int main (int argc, char *argv[])
     exit(1);
   }
 
-  printf ("Raspberry Pi blink pin %d\n", pin) ;
+  printf ("Raspberry Pi blinking LED on pin %d\n", pin) ;
 
   initLED();
   
-  for(;;)
+  for(i=0;i<10;i++)
   {
     turnOnLED();
     delay(500);
