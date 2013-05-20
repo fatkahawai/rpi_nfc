@@ -22,7 +22,8 @@
 
 
 #define READ_BUFFER_SIZE   256       // size of TCP read buffer in bytes
-#define POLL_INTERVAL      1000      // pause 1sec between NFC device poll attempts
+#define POLL_INTERVAL      1         // pause 1sec between NFC device poll attempts
+#define LED_ON_INTERVAL    1         // turn LED on for 1sec 
 
 // Error handler
 //
@@ -34,6 +35,22 @@ void error(const char *msg)
 
     exit(0);
 }
+
+// delay
+//
+void delay ( int nDelaySeconds )
+{  
+    time_t start, now;
+    double elapsedSeconds;
+
+    time(&start);  /* get current time; same as: timer = time(NULL)  */
+
+    do{ 
+        time( &now );
+        elapsedSeconds = difftime( start, now );
+    } while ( elapsedSeconds < nDelaySeconds );
+}
+
 
 // ===========================================================================
 // main
@@ -93,11 +110,11 @@ int main(int argc, char *argv[])
             // blink LED
             turnOnLED();
 
-            if( sendTCPmessage("got a NFC target!") <= 0 ){
+            if( sendTCPmessage("{'tag':'NFC target'}") <= 0 ){
                 fprintf(stderr,"ERROR writing to socket. retrying\n");
             } else{ // get the ACK from the server
 
-                delay( 500 ); // wait for ACK then turn LED off
+                delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
                 turnOffLED();
 
                 if( readTCPmessage(buffer, READ_BUFFER_SIZE) < 0 ){

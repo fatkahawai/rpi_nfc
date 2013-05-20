@@ -33,6 +33,21 @@ void error(const char *msg)
     exit(0);
 }
 
+// delay
+//
+void delay ( int nDelaySeconds )
+{  
+    time_t start, now;
+    double elapsedSeconds;
+
+    time(&start);  /* get current time; same as: timer = time(NULL)  */
+
+    do{ 
+        time( &now );
+        elapsedSeconds = difftime( start, now );
+    } while ( elapsedSeconds < nDelaySeconds );
+}
+
 // ===========================================================================
 // main
 //
@@ -81,7 +96,7 @@ int main(int argc, char *argv[])
                 printf("Received %d bytes from server: %s\n",n, buffer);
         } // else
 
-        delay(500); // wait half a second
+        delay(1); // wait a second
  
     } // while(1)
 
