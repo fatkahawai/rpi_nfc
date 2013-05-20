@@ -21,6 +21,8 @@
 int main (int argc, char *argv[])
 {
   int pin = 0;
+  int i;
+  
   if  (argc < 2 ){
     printf("usage: %s <pin 0 - 7>\n",argv[0]);
     exit(1);
