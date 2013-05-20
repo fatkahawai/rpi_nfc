@@ -79,6 +79,9 @@ int main(int argc, char *argv[])
             } else 
                 printf("Received %d bytes from server: %s\n",n, buffer);
         } // else
+
+        delay(500); // wait half a second
+ 
     } // while(1)
 
     closeTCPsocket();

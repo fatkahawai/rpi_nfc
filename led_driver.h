@@ -10,7 +10,7 @@
 // Public Interface
 // function prototypes 
 
-int ledSetup();
-void ledOn();
-void ledOff();
+int  initLED( void );
+void turnOnLED( void );
+void turnOffLED( void );
 

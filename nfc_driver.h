@@ -7,7 +7,7 @@
  * Copyright (c) 2013 Pink Pelican NZ Ltd <bob@pink-pelican.com> 
  */
 
-
+#include "nfc-types.h"
 
 // Function prototypes
 int  initNFC( void );

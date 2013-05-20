@@ -116,7 +116,8 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
 // close NFC device 
 //
 void closeNFC( void ){
-  nfc_close (pnd);
+  if( pnd != NULL )
+    nfc_close (pnd);
   nfc_exit (NULL);
 }
 

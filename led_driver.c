@@ -37,7 +37,7 @@
  *
  * returns: 0 if OK, -1 if failed
  */
-int ledSetup(){
+int initLED( void ){
   if (wiringPiSetup () == -1)
     return( -1 );
 
@@ -48,14 +48,14 @@ int ledSetup(){
 /*
  * switch ON the LED
  */
-void ledOn(){
+void turnOnLED( void ){
     digitalWrite (LED_PIN, 1) ;       // ON
 }
 
 /*
  * switch OFF the LED
  */
-void ledOff(){
+void turnOffLED( void ){
     digitalWrite (LED_PIN, 0) ;       // OFF
 }
 
@@ -79,13 +79,13 @@ int main (int argc, char *argv[])
 
   printf ("Raspberry Pi blink pin %d\n", pin) ;
 
-  ledSetup();
+  initLED();
   
   for(;;)
   {
-    ledOn();
+    turnOnLED();
     delay(500);
-    ledOff();
+    turnOffLED();
     delay(500);
   }
 }
