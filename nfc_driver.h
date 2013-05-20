@@ -11,5 +11,5 @@
 
 // Function prototypes
 int  initNFC( void );
-int  pollNFC( nfc_target *nt );
+int  pollNFC( nfc_target *nt , int nPolls, int nInterval );
 void closeNFC( void );

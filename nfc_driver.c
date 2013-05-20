@@ -25,9 +25,10 @@
 
 #include "nfc_driver.h"
 
-
+// Definitions
 #define MAX_DEVICE_COUNT 16
 
+// STATIC GLOBALS (referenceable within this file only) 
 static nfc_device *pnd = NULL;
 
 // ---------------------------------------------------------------------------
@@ -69,7 +70,7 @@ int initNFC(void){
   printf ("NFC reader: %s opened\n", nfc_device_get_name (pnd));
 
   if (signal (SIGINT, stop_polling) == SIG_ERR)   // set interupt handler on Ctl-C 
-    printf("\nERROR: can't catch SIGINT\n");
+    perror("ERROR: can't catch SIGINT");
   
   // Display libnfc version
   const char *acLibnfcVersion = nfc_version ();
@@ -84,10 +85,10 @@ int initNFC(void){
 // 
 // returns: result
 //
-int pollNFC( nfc_target *pTarget ){
+int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
   int res = 0;
-  const uint8_t uiPollNr = 20; // number of time to poll
-  const uint8_t uiPeriod = 2;  // time between polls in 150ms units
+  uint8_t uiPollNr; // number of time to poll
+  uint8_t uiPeriod;  // time between polls in 150ms units
   const nfc_modulation nmModulations[5] = { // list of tag types you will accept
     { .nmt = NMT_ISO14443A, .nbr = NBR_106 },
     { .nmt = NMT_ISO14443B, .nbr = NBR_106 },
@@ -96,6 +97,9 @@ int pollNFC( nfc_target *pTarget ){
     { .nmt = NMT_JEWEL, .nbr = NBR_106 },
   };
   const size_t szModulations = 5; // number of tag types in the list
+
+  uiPollNr = (uint8_t )nPolls;
+  uiPeriod = (uint8_t )nInterval;
 
   printf ("NFC device will poll during %ld s (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150)/1000, uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
 

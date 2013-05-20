@@ -50,7 +50,7 @@ int main (int argc, const char *argv[])
     printf("NFC device Initialized successfully.");
 
   nfc_target nt;
-  res = pollNFC( &nt );
+  res = pollNFC( &nt, 20, 2 ); // do 20 polls at 2s intervals
 
   // display results from NFC target device
   if (res > 0) {
