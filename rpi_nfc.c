@@ -47,7 +47,7 @@ void delay ( int nDelaySeconds )
 
     do{ 
         time( &now );
-        elapsedSeconds = difftime( start, now );
+        elapsedSeconds = difftime( now, start );
     } while ( elapsedSeconds < nDelaySeconds );
 }
 

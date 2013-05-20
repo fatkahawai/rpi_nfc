@@ -44,7 +44,7 @@ void delay ( int nDelaySeconds )
 
     do{ 
         time( &now );
-        elapsedSeconds = difftime( start, now );
+        elapsedSeconds = difftime( now, start );
     } while ( elapsedSeconds < nDelaySeconds );
 }
 
@@ -57,7 +57,7 @@ void delay ( int nDelaySeconds )
 //
 int main(int argc, char *argv[])
 {
-    int nPortNo, n;
+    int nPortNo, n, res;
     char buffer[256];
     char *szHostName;
 
@@ -89,10 +89,10 @@ int main(int argc, char *argv[])
             exit(1);
         }
         else{
-            if( readTCPmessage(buffer, 256) < 0 ){
+            if( (res= readTCPmessage(buffer, 256)) < 0 ){
                 fprintf(stderr,"ERROR reading from socket");
                 exit(2);
-            } else 
+            } else if ( res > 0 )
                 printf("Received %d bytes from server: %s\n",n, buffer);
         } // else
 
