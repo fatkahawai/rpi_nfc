@@ -139,7 +139,8 @@ int constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBuf
   sprintf(szBuffer, "{" );
 
   // nfc_modulation_type
-
+  // and baudRate
+  //
   switch(nfcTarget.nm.nmt) {
     case NMT_ISO14443A:
       sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443A");
@@ -232,18 +233,14 @@ static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szB
 {
   char szElement[256];
 
-  sprintf(szBuffer, "{");
-
   // ATQA
-  sprintf( szElement,"\"ATQA\":\"%s\"", nai.abtAtqa );
+  sprintf( szElement,",\"ATQA\":\"%s\"", nai.abtAtqa );
   strcat( szBuffer, szElement );
  
   // UID
-  strcat( szBuffer, ",\"UID\":" );
-  sprintf(szElement, "\"%u %s\"", *(nai.abtUid), (nai.abtUid[0] == 0x08 ? "Random UID":""));
+  sprintf(szElement, ",\"UID\":\"%u %s\"", *(nai.abtUid), (nai.abtUid[0] == 0x08 ? "Random UID":""));
   strcat( szBuffer, szElement );
 
-  strcat( szBuffer, "}" );
   return( strlen( szBuffer) );
 }
 

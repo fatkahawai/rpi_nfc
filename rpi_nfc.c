@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
             if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
                 error("construct JSON string failed");
 
-            printf("Sending JSON :%s\n", szBuffer );
+            printf("Sending JSON: %s\n", szBuffer );
 
             if( sendTCPmessage( szBuffer ) <= 0 ){
                 fprintf(stderr,"ERROR writing to socket. retrying\n");
