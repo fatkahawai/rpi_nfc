@@ -105,8 +105,8 @@ int main(int argc, char *argv[])
     while(1){
 
         // make one poll attempt of NFC device to detect any target
-        if( (res= pollNFC( &nfcTarget, 1, 1 )) < 0 ) {
-            fprintf(stderr,"polling failed. retrying\n");
+        if( (res= pollNFC( &nfcTarget, 1, 2 )) < 0 ) {
+            error("polling NFC device failed");
         } 
         else if ( res > 0 ) {
             // display results from NFC target device

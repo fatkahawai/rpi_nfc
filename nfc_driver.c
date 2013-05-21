@@ -104,7 +104,7 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
   uiPollNr = (uint8_t )nPolls;
   uiPeriod = (uint8_t )nInterval;
 
-  printf ("NFC device will poll during %ld s (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150)/1000, uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
+  printf ("NFC device will poll during %ld ms (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150), uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
     nfc_perror (pnd, "nfc_initiator_poll_target");
