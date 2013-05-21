@@ -107,10 +107,14 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
   printf ("NFC device will poll during %ld ms (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150), uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
-    nfc_perror (pnd, "nfc_initiator_poll_target");
-    fprintf(stderr,"result %d", res);
-    // nfc_close (pnd);
-    // nfc_exit (NULL);
+    if( res == -90 )
+      res = 0; // return code signifying no target found
+    else{
+      nfc_perror (pnd, "nfc_initiator_poll_target");
+      fprintf(stderr,"result %d", res);
+      // nfc_close (pnd);
+      // nfc_exit (NULL);
+    }
   }
   return(res);
 } // pollNFC
