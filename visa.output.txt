@@ -1,0 +1,9 @@
+NFC reader: pn532_uart:/dev/ttyAMA0 - PN532 v1.6 (0x07) opened
+using libnfc 1.6.0-rc1 (r1326)
+NFC device will poll during 30 s (20 pollings of 300 ms for 5 modulations)
+ISO/IEC 14443A (106 kbps) target:
+    ATQA (SENS_RES): 00  04  
+       UID (NFCID1): 1f  29  e0  b2  
+      SAK (SEL_RES): 28  
+                ATS: 78  80  82  02  80  31  80  66  b0  84  12  01  6e  01  83  00  90  00  
+as JSON string: 
