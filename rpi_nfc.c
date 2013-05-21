@@ -95,13 +95,17 @@ int main(int argc, char *argv[])
     // Init GPIO for LED display
     if( initLED() != 0 )
         error("unable to initialise GPIO for LED display");
+                // blink LED
+    turnOnLED();
+    delay( LED_ON_INTERVAL ); // blink LED for a second     
+    turnOffLED();
 
 
     // session. send TCP messages to server
     while(1){
 
         // make one poll attempt of NFC device to detect any target
-        if( (res= pollNFC( &nfcTarget, 1, 0 )) < 0 ) {
+        if( (res= pollNFC( &nfcTarget, 1, 1 )) < 0 ) {
             fprintf(stderr,"polling failed. retrying\n");
         } 
         else if ( res > 0 ) {

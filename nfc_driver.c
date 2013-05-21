@@ -40,11 +40,11 @@ static nfc_device *pnd = NULL;
 void stop_polling (int sig)
 {
   (void) sig;
+
+  printf("\nNFC polling aborted\n");
   if (pnd)
     nfc_abort_command (pnd);
-  else
-    exit (EXIT_FAILURE);
-  printf("\nNFC polling aborted\n");
+  exit (EXIT_FAILURE);
 }
 
 // ---------------------------------------------------------------------------
