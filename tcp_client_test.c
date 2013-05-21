@@ -22,6 +22,15 @@
 
 #include "tcp_client.h"
 
+#define LIST_SIZE 5
+
+char *szJSONstringList[] = {
+    "{\"ID\":\"03\",\"tag\":\"Hello World!\"}",
+    "{\"ID\": 4, \"tag\": \"RPI-NFC-004\"}",
+    "{\"ID\": 5, \"tag\": \"RPI-NFC-005\"}",
+    "{\"ID\": 6, \"tag\": \"RPI-NFC-006\"}",
+    "{\"ID\": 7, \"tag\": \"no more after this one\"}",
+};
 
 // Error handler
 //
@@ -37,15 +46,16 @@ void error(const char *msg)
 //
 void delay ( int nDelaySeconds )
 {  
-    time_t start, now;
-    double elapsedSeconds;
+    time_t tStart, tNow;
+    double fdElapsedSeconds;
 
-    time(&start);  /* get current time; same as: timer = time(NULL)  */
+    time(&tStart);  /* get current time; same as: timer = time(NULL)  */
 
     do{ 
-        time( &now );
-        elapsedSeconds = difftime( now, start );
-    } while ( elapsedSeconds < nDelaySeconds );
+        time( &tNow );
+        fdElapsedSeconds = difftime( tNow, tStart );
+    } while ( fdElapsedSeconds < nDelaySeconds );
+    
 }
 
 // ===========================================================================
@@ -57,7 +67,7 @@ void delay ( int nDelaySeconds )
 //
 int main(int argc, char *argv[])
 {
-    int nPortNo, n, res;
+    int nPortNo, n, res, i;
     char buffer[256];
     char *szHostName;
 
@@ -73,33 +83,33 @@ int main(int argc, char *argv[])
     if ( (n= openTCPSocket( szHostName, nPortNo )) != 0 ){
       fprintf(stderr,"ERROR %d: ",n);
       switch(n){
-        case 1: fprintf(stderr,"unable to open a socket\n");
-        case 2: fprintf(stderr,"no such host\n");
-        case 3: fprintf(stderr,"unable to connect to server\n");
+        case 1: fprintf(stderr,"unable to open a socket\n"); break;
+        case 2: fprintf(stderr,"no such host\n"); break;
+        case 3: fprintf(stderr,"unable to connect to server\n"); break;
         default: fprintf(stderr,"<unknown>\n");
       }
       exit(n);
-    } // if
+    } // if    
+    printf("Socket opened. Sending messages to server...(hit Ctl-C to stop)\n");
 
     // session. send TCP messages to server
-    while(1){
+    for( i=0 ; i < LIST_SIZE ; i++ ){
 
-        if( sendTCPmessage("Hello World!") <= 0 ){
+        printf("Sending %s\n", szJSONstringList[i]);
+        if( sendTCPmessage(szJSONstringList[i]) <= 0 ){
             fprintf(stderr,"ERROR writing to socket\n");
             exit(1);
         }
         else{
             if( (res= readTCPmessage(buffer, 256)) < 0 ){
-                fprintf(stderr,"ERROR reading from socket");
+                fprintf(stderr,"ERROR reading from socket\n");
                 exit(2);
             } else if ( res > 0 )
-                printf("Received %d bytes from server: %s\n",n, buffer);
+                printf("Received %d bytes from server: %s\n", res, buffer);
         } // else
-
-        delay(1); // wait a second
+        delay(1); // pause for a second
  
     } // while(1)
-
     closeTCPsocket();
 } // main()
 
