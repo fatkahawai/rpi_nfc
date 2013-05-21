@@ -108,6 +108,7 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
     nfc_perror (pnd, "nfc_initiator_poll_target");
+    fprintf(stderr,"result %d", res);
     // nfc_close (pnd);
     // nfc_exit (NULL);
     return(-1); // exit (EXIT_FAILURE);

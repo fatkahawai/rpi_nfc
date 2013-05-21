@@ -33,6 +33,7 @@ void error(const char *msg)
     closeTCPsocket();
     closeNFC();
 
+    turnOffLED();
     exit(0);
 }
 
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
             if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
                 error("construct JSON string failed");
 
-            printf("Sending JSON: %s\n", szBuffer );
+            printf("\nSending JSON: %s\n", szBuffer );
 
             if( sendTCPmessage( szBuffer ) <= 0 ){
                 fprintf(stderr,"ERROR writing to socket. retrying\n");
@@ -127,13 +128,13 @@ int main(int argc, char *argv[])
                 delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
                 turnOffLED();
 
-                if( readTCPmessage(szBuffer, BUFFER_SIZE) < 0 ){
+                if( (n= readTCPmessage(szBuffer, BUFFER_SIZE)) < 0 ){
                     fprintf(stderr,"ERROR reading from socket. retrying\n");
                 } else {
-                    printf("Received %d bytes from server: %s\n",n, szBuffer);
-
-                    if( strcmp(szBuffer, "ACK") ==0 )
-                        printf("ACK from server!\n");
+                    if( strcmp(szBuffer, "ACK") == 0 )
+                        printf("ACK received from server\n");
+                    else printf("ERROR - expected 'ACK'. Received %d bytes from server: %s\n",
+                                n, szBuffer);
                 } // else read OK
             } // else sent OK
         } // else if res > 0 - we polled a target
@@ -143,6 +144,7 @@ int main(int argc, char *argv[])
     } // while(1)
 
 
+    turnOffLED();
     closeTCPsocket();
     closeNFC();
 
