@@ -23,6 +23,7 @@
 
 #include "nfc_driver.h"
 
+#define BUFSIZE 256
 
 // ===========================================================================
 // main
@@ -31,6 +32,7 @@ int main (int argc, const char *argv[])
 {
   bool verbose = false;
   int res = 0;
+  char buffer[BUFSIZE];
 
   if (argc != 1) {
     if ((argc == 2) && (0 == strcmp ("-v", argv[1]))) {
@@ -55,6 +57,9 @@ int main (int argc, const char *argv[])
   // display results from NFC target device
   if (res > 0) {
     print_nfc_target ( nt, verbose );
+
+    printf("as JSON string: ", constructJSONstringNFC(nt, buffer, BUFSIZE));
+
   } else if (res < 0){
     printf("polling failed.\n");
   } else {

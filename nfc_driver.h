@@ -13,3 +13,4 @@
 int  initNFC( void );
 int  pollNFC( nfc_target *nt , int nPolls, int nInterval );
 void closeNFC( void );
+int  constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBufLen );

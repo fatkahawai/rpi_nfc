@@ -21,7 +21,7 @@
 #include "nfc_driver.h"
 
 
-#define READ_BUFFER_SIZE   256       // size of TCP read buffer in bytes
+#define BUFFER_SIZE     1024         // size of TCP write and read buffer in bytes
 #define POLL_INTERVAL      1         // pause 1sec between NFC device poll attempts
 #define LED_ON_INTERVAL    1         // turn LED on for 1sec 
 
@@ -52,6 +52,7 @@ void delay ( int nDelaySeconds )
 }
 
 
+
 // ===========================================================================
 // main
 //
@@ -62,7 +63,7 @@ void delay ( int nDelaySeconds )
 int main(int argc, char *argv[])
 {
     int nPortNo, n, res;
-    char buffer[READ_BUFFER_SIZE];
+    char szBuffer[BUFFER_SIZE];
     char *szHostName;
     nfc_target nfcTarget;
 
@@ -110,19 +111,24 @@ int main(int argc, char *argv[])
             // blink LED
             turnOnLED();
 
-            if( sendTCPmessage("{'tag':'NFC target'}") <= 0 ){
+            if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
+                error("construct JSON string failed");
+
+            printf("Sending JSON :%s\n", szBuffer );
+
+            if( sendTCPmessage( szBuffer ) <= 0 ){
                 fprintf(stderr,"ERROR writing to socket. retrying\n");
             } else{ // get the ACK from the server
 
                 delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
                 turnOffLED();
 
-                if( readTCPmessage(buffer, READ_BUFFER_SIZE) < 0 ){
+                if( readTCPmessage(szBuffer, BUFFER_SIZE) < 0 ){
                     fprintf(stderr,"ERROR reading from socket. retrying\n");
                 } else {
-                    printf("Received %d bytes from server: %s\n",n, buffer);
+                    printf("Received %d bytes from server: %s\n",n, szBuffer);
 
-                    if( strcmp(buffer, "ACK") ==0 )
+                    if( strcmp(szBuffer, "ACK") ==0 )
                         printf("ACK from server!\n");
                 } // else read OK
             } // else sent OK

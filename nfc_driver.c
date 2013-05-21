@@ -25,6 +25,9 @@
 
 #include "nfc_driver.h"
 
+// local function prototypes
+static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szBffer );
+
 // Definitions
 #define MAX_DEVICE_COUNT 16
 
@@ -121,44 +124,126 @@ void closeNFC( void ){
   nfc_exit (NULL);
 }
 
-/*
-// ===========================================================================
-// example main
+
+// ---------------------------------------------------------------------------
+// create JSON-encoded nfc_target struct in buffer to send to server
 //
-int main (int argc, const char *argv[])
+// returns : number of chars written into buffer
+//
+int constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBufLen ){
+
+  char element[256];
+
+  bzero(szBuffer, nBufLen);
+
+  sprintf(szBuffer, "{" );
+
+  // nfc_modulation_type
+
+  switch(nfcTarget.nm.nmt) {
+    case NMT_ISO14443A:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443A");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      stringify_nfc_iso14443a_info (nfcTarget.nti.nai, element);
+      strcat(szBuffer, element);
+
+    break;
+    case NMT_JEWEL:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "Innovision Jewel");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_jewel_info (nfcTarget.nti.nji, verbose);
+    break;
+    case NMT_FELICA:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "FeliCa");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_felica_info (nfcTarget.nti.nfi, verbose);
+    break;
+    case NMT_ISO14443B:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443-4B");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_iso14443b_info (nfcTarget.nti.nbi, verbose);
+    break;
+    case NMT_ISO14443BI:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443-4Bi");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_iso14443bi_info (nfcTarget.nti.nii, verbose);
+    break;
+    case NMT_ISO14443B2SR:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443-2B ST SRx");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_iso14443b2sr_info (nfcTarget.nti.nsi, verbose);
+    break;
+    case NMT_ISO14443B2CT:
+      sprintf(element, "\"nfcModulationType\":\"%s\"", "ISO/IEC 14443-2B ASK CTx");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_iso14443b2ct_info (nfcTarget.nti.nci, verbose);
+    break;
+    case NMT_DEP:
+      
+      sprintf(element, "\"nfcModulationType\":\"%s %s\"", "D.E.P.",
+                       (nfcTarget.nti.ndi.ndm == NDM_ACTIVE)? "active mode" : "passive mode");
+      strcat(szBuffer, element);
+
+      sprintf(element, ",\"baudRate\":\"%s\"",str_nfc_baud_rate(nfcTarget.nm.nbr) );
+      strcat(szBuffer, element);
+
+      //stringify_nfc_dep_info (nfcTarget.nti.ndi, verbose);
+    break;
+  }
+  strcat(szBuffer, "}" );
+  return( strlen(szBuffer) );
+}
+
+
+// ---------------------------------------------------------------------------
+// Internal function to JSON-encode the ISO 14443A structure 
+//
+// returns : number of characters written into buffer
+//
+static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szBuffer )
 {
-  bool verbose = false;
-  int res = 0;
+  char szElement[256];
 
-  if (argc != 1) {
-    if ((argc == 2) && (0 == strcmp ("-v", argv[1]))) {
-      verbose = true;
-    } else {
-      printf ("usage: %s [-v]\n", argv[0]);
-      printf ("  -v\t verbose display\n");
-      exit (EXIT_FAILURE);
-    }
-  }
-  
-  if( initNFC() < 0) {
-    exit(EXIT_FAILURE);
-  }
-  if ( verbose )
-    printf("NFC device Initialized successfully.");
+  sprintf(szBuffer, "{");
 
-  nfc_target nt;
-  res = pollNFC( &nt );
+  // ATQA
+  sprintf( szElement,"\"ATQA\":\"%s\"", nai.abtAtqa );
+  strcat( szBuffer, szElement );
+ 
+  // UID
+  strcat( szBuffer, ",\"UID\":" );
+  sprintf(szElement, "\"%u %s\"", *(nai.abtUid), (nai.abtUid[0] == 0x08 ? "Random UID":""));
+  strcat( szBuffer, szElement );
 
-  // display results from NFC target device
-  if (res > 0) {
-    print_nfc_target ( nt, verbose );
-  } else if (res < 0){
-    printf("polling failed.\n");
-  } else {
-    printf ("No NFC target found.\n");
-  }
+  strcat( szBuffer, "}" );
+  return( strlen( szBuffer) );
+}
 
-  // close NFC device and end program
-  closeNFC();
-  exit (EXIT_SUCCESS);
-}*/
