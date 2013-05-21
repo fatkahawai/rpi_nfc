@@ -61,8 +61,8 @@ int main (int argc, const char *argv[])
     printf("as JSON string: ", constructJSONstringNFC(nt, buffer, BUFSIZE));
 
   } else if (res < 0){
-    printf("polling failed.\n");
-  } else {
+    printf("polling failed. return code %d\n", res);
+  } else { // == 0
     printf ("No NFC target found.\n");
   }
 

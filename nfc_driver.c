@@ -111,7 +111,6 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
     fprintf(stderr,"result %d", res);
     // nfc_close (pnd);
     // nfc_exit (NULL);
-    return(-1); // exit (EXIT_FAILURE);
   }
   return(res);
 } // pollNFC
