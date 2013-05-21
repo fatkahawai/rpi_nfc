@@ -30,16 +30,17 @@
 //
 int main (int argc, const char *argv[])
 {
-  bool verbose = false;
+  bool verbose = true;
   int res = 0;
+  int n;
   char buffer[BUFSIZE];
 
   if (argc != 1) {
-    if ((argc == 2) && (0 == strcmp ("-v", argv[1]))) {
+    if ((argc == 2) && (0 == strcmp ("-nv", argv[1]))) {
       verbose = true;
     } else {
       printf ("usage: %s [-v]\n", argv[0]);
-      printf ("  -v\t verbose display\n");
+      printf ("  -nv\t not verbose display\n");
       exit (EXIT_FAILURE);
     }
   }
@@ -58,7 +59,9 @@ int main (int argc, const char *argv[])
   if (res > 0) {
     print_nfc_target ( nt, verbose );
 
-    printf("as JSON string: ", constructJSONstringNFC(nt, buffer, BUFSIZE));
+    n= constructJSONstringNFC(nt, buffer, BUFSIZE);
+    if( n > 0 )
+      printf("as JSON string (%d chars): ", n, buffer);
 
   } else if (res < 0){
     printf("polling failed. return code %d\n", res);
