@@ -21,11 +21,87 @@
 #include "nfc_driver.h"
 
 
-#define BUFFER_SIZE     1024         // size of TCP write and read buffer in bytes
-#define POLL_INTERVAL      1         // pause 1sec between NFC device poll attempts
-#define LED_ON_INTERVAL    1         // turn LED on for 1sec 
+#define BUFFER_SIZE         1024         // size of TCP write and read buffer in bytes
+#define NFC_POLL_INTERVAL   1000         // pause 1sec between NFC device poll attempts
+#define LED_ON_INTERVAL      500         // turn LED on for 500ms 
+#define TCP_TIMEOUT         5000         // timeout waiting for ACK from server 
 
+
+// ---------------------------------------------------------------------------
+// static variables for the async delay timer functions
+//
+typedef enum{
+    LED_TIMER = 0,
+    NFC_TIMER,
+    TCP_TIMER } timer_type;
+
+static struct timeval   timeRef[3];
+static long int         lInterval[3];
+static long int         lNextTriggerTime[3];
+
+
+// ---------------------------------------------------------------------------
+// set timer for async delay
+// 
+void setInterval (  timer_type eTimerID, long int lMilliseconds ){
+    long int lStartTime;
+
+    gettimeofday( &timeRef[eTimerID], NULL );
+    lStartTime = (double) (timeRef[eTimerID].tv_sec * 1000); // secs x 1000 = millisecs
+    lStartTime+= (double) (timeRef[eTimerID].tv_usec / 1000); // microsecs/1000 = millisecs
+
+    lInterval[eTimerID] = lMilliseconds;
+    lNextTriggerTime[eTimerID] = lStartTime + lInterval[eTimerID];
+}
+
+// ---------------------------------------------------------------------------
+// set timer for async LED blink delay
+// 
+void setLEDInterval ( long int lMilliseconds ){
+    setInterval( LED_TIMER, lMilliseconds );
+}
+
+// ---------------------------------------------------------------------------
+// set timer for async LED blink delay
+// 
+void setNFCInterval ( long int lMilliseconds ){
+    setInterval( NFC_TIMER, lMilliseconds );
+}
+
+// ---------------------------------------------------------------------------
+// set timer for async LED blink delay
+// 
+void setTCPtimeout ( long int lMilliseconds ){
+    setInterval( TCP_TIMER, lMilliseconds );
+}
+
+// ---------------------------------------------------------------------------
+// async delay - check if the interval time has elapsed 
+// 
+// returns true if time is up, else false
+//
+bool intervalTimeIsUp(  timer_type eTimerID ){
+
+    struct timeval timeNow;
+    long int lCurrentTime;
+
+    gettimeofday( &timeNow, NULL );
+    lCurrentTime = (double) (timeNow.tv_sec * 1000); // secs x 1000 = millisecs
+    lCurrentTime+= (double) (timeNow.tv_usec / 1000); // microsecs/1000 = millisecs
+
+    // printf("lCurrentTime= %ld\n", lCurrentTime );
+
+    if( lCurrentTime >= lNextTriggerTime[eTimerID] ){
+        lNextTriggerTime[eTimerID] = lCurrentTime + lInterval[eTimerID];
+        return( true);
+    }
+    else
+        return( false );
+}
+
+// ---------------------------------------------------------------------------
 // Error handler
+// close NFC device and TCP socket, turn off LED, and exit
 //
 void error(const char *msg)
 {
@@ -37,12 +113,14 @@ void error(const char *msg)
     exit(0);
 }
 
+// ---------------------------------------------------------------------------
 // delay
-//
-void delay ( int nDelaySeconds )
+// 
+void delay ( int nDelayMilliSeconds )
 {  
     time_t start, now;
     double elapsedSeconds;
+    int nDelaySeconds = nDelayMilliSeconds/1000; 
 
     time(&start);  /* get current time; same as: timer = time(NULL)  */
 
@@ -51,7 +129,6 @@ void delay ( int nDelaySeconds )
         elapsedSeconds = difftime( now, start );
     } while ( elapsedSeconds < nDelaySeconds );
 }
-
 
 
 // ===========================================================================
@@ -96,15 +173,23 @@ int main(int argc, char *argv[])
     // Init GPIO for LED display
     if( initLED() != 0 )
         error("unable to initialise GPIO for LED display");
-                // blink LED
-    turnOnLED();
-    delay( LED_ON_INTERVAL ); // blink LED for a second     
-    turnOffLED();
 
+    // blink LED
+    turnOnLED();
+    setLEDinterval( LED_ON_INTERVAL ); // blink LED     
+
+
+    setNFCinterval( NFC_POLL_INTERVAL ); 
+    setTCPtimeout( TCP_TIMEOUT );   
 
     // session. send TCP messages to server
     while(1){
 
+      if( isLEDon() )
+        if( intervalTimeIsUp(LED_TIMER) )
+            turnOffLED();
+
+      if( intervalTimeIsUp( NFC_TIMER) ) {
         // make one poll attempt of NFC device to detect any target
         if( (res= pollNFC( &nfcTarget, 1, 1 )) < 0 ) {
             error("polling NFC device failed");
@@ -115,6 +200,7 @@ int main(int argc, char *argv[])
 
             // blink LED
             turnOnLED();
+            setLEDinterval( LED_ON_INTERVAL );
 
             if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
                 error("construct JSON string failed");
@@ -139,8 +225,8 @@ int main(int argc, char *argv[])
             } // else sent OK
         } // else if res > 0 - we polled a target
         // else res ==0, i.e. no target detected, just continue
-
-        delay( POLL_INTERVAL ); // wait half a second before polling again
+      } // if
+        //delay( POLL_INTERVAL ); // wait half a second before polling again
     } // while(1)
 
 

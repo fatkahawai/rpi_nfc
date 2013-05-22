@@ -32,6 +32,25 @@
 
 #define LED_PIN 4
 
+static bool bLEDisOn = false;
+
+
+/*
+ * switch ON the LED
+ */
+void turnOnLED( void ){
+    digitalWrite (LED_PIN, 1) ;       // ON
+    bLEDisOn = true;
+}
+
+/*
+ * switch OFF the LED
+ */
+void turnOffLED( void ){
+    digitalWrite (LED_PIN, 0) ;       // OFF
+    bLEDisOn = false;
+}
+
 /*
  * initialise port for output
  *
@@ -42,21 +61,9 @@ int initLED( void ){
     return( -1 );
 
   pinMode (LED_PIN, OUTPUT) ;         // aka BCM_GPIO pin 17
+  turnOffLED();
+
   return( 0 ) ;
-}
-
-/*
- * switch ON the LED
- */
-void turnOnLED( void ){
-    digitalWrite (LED_PIN, 1) ;       // ON
-}
-
-/*
- * switch OFF the LED
- */
-void turnOffLED( void ){
-    digitalWrite (LED_PIN, 0) ;       // OFF
 }
 
 
