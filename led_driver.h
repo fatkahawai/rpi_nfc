@@ -6,6 +6,7 @@
  * Copyright (c) 2013 Pink Pelican NZ Ltd <bob@pink-pelican.com>
  */
 
+#include <stdbool.h>
 
 // Public Interface
 // function prototypes 
