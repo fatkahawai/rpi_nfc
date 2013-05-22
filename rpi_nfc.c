@@ -208,7 +208,9 @@ int main(int argc, char *argv[])
             error("construct JSON string failed");
 
           // if its not the same target detected again, send it to the server
-          if(  strcmp( szBuffer, szPrevBuffer ) != 0 ){
+          if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){
+              fprintf(stderr,"found same target card. ignoring\n");
+          } else {
             printf("\nSending JSON: %s\n", szBuffer );
 
             // send JSON string as TCP message to the server
@@ -232,7 +234,7 @@ int main(int argc, char *argv[])
             // save the JSON to compare with next event, so we dont double-scan
             strcpy(szPrevBuffer, szBuffer );
 
-          } // if not a repeat tag
+          } // else not a repeat tag so can send
         } // else if res > 0 - we polled a target
         // else res ==0, i.e. no target detected, just continue
       } // if
