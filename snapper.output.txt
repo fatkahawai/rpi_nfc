@@ -1,0 +1,27 @@
+ISO/IEC 14443A (106 kbps) target:
+    ATQA (SENS_RES): 00  04
+* UID size: single
+* bit frame anticollision supported
+       UID (NFCID3): 08  22  c9  63
+* Random UID
+      SAK (SEL_RES): 20
+* Compliant with ISO/IEC 14443-4
+* Not compliant with ISO/IEC 18092
+                ATS: 78  77  b9  02  01  11  20  03
+* Max Frame Size accepted by PICC: 256 bytes
+* Bit Rate Capability:
+  * PICC to PCD, DS=2, bitrate 212 kbits/s supported
+  * PICC to PCD, DS=4, bitrate 424 kbits/s supported
+  * PICC to PCD, DS=8, bitrate 847 kbits/s supported
+  * PCD to PICC, DR=2, bitrate 212 kbits/s supported
+  * PCD to PICC, DR=4, bitrate 424 kbits/s supported
+  * PCD to PICC, DR=8, bitrate 847 kbits/s supported
+* Frame Waiting Time: 618.6 ms
+* Start-up Frame Guard Time: 154.7 ms
+* Node ADdress not supported
+* Card IDentifier supported
+* Historical bytes Tk: 01  11  20  03
+  * Proprietary format
+Fingerprinting based on ATQA & SAK values:
+* Mifare Plus (4-byte UID) 2K/4K SL3
+* SmartMX with Mifare 1K emulation

@@ -1,8 +1,15 @@
 NFC reader: pn532_uart:/dev/ttyAMA0 - PN532 v1.6 (0x07) opened
 using libnfc 1.6.0-rc1 (r1326)
-NFC device will poll during 30 s (20 pollings of 300 ms for 5 modulations)
+
 ISO/IEC 14443A (106 kbps) target:
-    ATQA (SENS_RES): 00  04  
-       UID (NFCID1): 5d  17  d0  23  
-      SAK (SEL_RES): 08  
-as JSON string: 
+    ATQA (SENS_RES): 00  04
+* UID size: single
+* bit frame anticollision supported
+       UID (NFCID1): 5d  17  d0  23
+      SAK (SEL_RES): 08
+* Not compliant with ISO/IEC 14443-4
+* Not compliant with ISO/IEC 18092
+Fingerprinting based on ATQA & SAK values:
+* Mifare Classic 1K
+* Mifare Plus (4-byte UID) 2K SL1
+* SmartMX with Mifare 1K emulation
