@@ -238,7 +238,7 @@ void stringifyToHex(char *szBuffer, const uint8_t *pbtData, const size_t szBytes
 
   for (szPos = 0; szPos < szBytes; szPos++){
     if ( szPos != 0 )
-      strcat(szBuffer,"-")
+      strcat(szBuffer,"-");
     sprintf(szElement, "%02X", pbtData[szPos]); 
     strcat(szBuffer, szElement);
   }
