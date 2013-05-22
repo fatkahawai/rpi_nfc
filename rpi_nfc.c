@@ -25,7 +25,7 @@
 #define NFC_POLL_INTERVAL   1000         // pause 1sec between NFC device poll attempts
 #define LED_ON_INTERVAL      500         // turn LED on for 500ms 
 #define TCP_TIMEOUT         5000         // timeout waiting for ACK from server 
-
+#define NFC_QUARANTINE_INTERVAL 5000     // don't accept tx from same card within 5s
 
 // ---------------------------------------------------------------------------
 // static variables for the async delay timer functions
@@ -33,11 +33,13 @@
 typedef enum{
     LED_TIMER = 0,
     NFC_TIMER,
-    TCP_TIMER } timer_type;
+    TCP_TIMER,
+    QUA_TIMER } timer_type;
 
-static struct timeval   timeRef[3];
-static long int         lInterval[3];
-static long int         lNextTriggerTime[3];
+// interval registers. one arrary element for each enum timer_type
+static struct timeval   timeRef[4];    
+static long int         lInterval[4];
+static long int         lNextTriggerTime[4];
 
 
 // ---------------------------------------------------------------------------
@@ -200,23 +202,29 @@ int main(int argc, char *argv[])
             error("polling NFC device failed");
         } 
         else if ( res > 0 ) {
-          // display results from NFC target device
-          print_nfc_target ( nfcTarget, true );
+            // display results from NFC target device
+            print_nfc_target ( nfcTarget, true );
 
-          // blink LED
-          turnOnLED();
-          setLEDinterval( LED_ON_INTERVAL );
+            // blink LED
+            turnOnLED();
+            setLEDinterval( LED_ON_INTERVAL );
 
-          // convert into a JSON string
-          if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
-            error("construct JSON string failed");
+            // convert into a JSON string
+            if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
+                error("construct JSON string failed");
 
-          // if its not the same target detected again, send it to the server
-          if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){
-              fprintf(stderr,"found same target card. ignoring\n");
-          } else {
-            // save the JSON to compare with next event, so we dont double-scan
+            // if its the same target detected again within the quarantine period, 
+            // ignore it - don't send it to the server
+            if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){ // same card again
+                if( !intervalTimeIsUp(LED_TIMER) ){  // its still within quarantine period
+                    fprintf(stderr,"found same target card within quarantine period. ignoring it.\n");
+                    continue;
+                }
+            } 
+            // save the JSON string to compare with the next card event, 
+            // so we dont double-scan a card
             strcpy(szPrevBuffer, szBuffer );
+            setInterval( QUA_TIMER, NFC_QUARANTINE_INTERVAL );
 
             printf("\nSending JSON: %s\n", szBuffer );
 
