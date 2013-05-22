@@ -104,7 +104,7 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
   uiPollNr = (uint8_t )nPolls;
   uiPeriod = (uint8_t )nInterval;
 
-  printf ("NFC device will poll during %ld ms (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150), uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
+  // printf ("NFC device will poll for %ld ms (%u pollings of %lu ms for %zd modulations)\n", (unsigned long) (uiPollNr * szModulations * uiPeriod * 150), uiPollNr, (unsigned long) uiPeriod * 150, szModulations);
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
     if( res == -90 )
@@ -227,7 +227,17 @@ int constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBuf
   return( strlen(szBuffer) );
 }
 
+// ---------------------------------------------------------------------------
+// convert a sequence of bytes into a Hex string
+//
+//
+void stringifyToHex(char *szBuffer, const uint8_t *pbtData, const size_t szBytes )
+{
+  size_t  szPos;
 
+  for (szPos = 0; szPos < szBytes; szPos++)
+    sprintf(szBuffer, "%02X-", pbtData[szPos]); 
+}
 // ---------------------------------------------------------------------------
 // Internal function to JSON-encode the ISO 14443A structure 
 //
@@ -236,14 +246,26 @@ int constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBuf
 static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szBuffer )
 {
   char szElement[256];
+  unsigned long ulUID;
+  int i;
 
-  // ATQA
-  sprintf( szElement,",\"ATQA\":\"%s\"", nai.abtAtqa );
+  // ATQA (Answer to Request)
+  strcat( szBuffer,",\"ATQA\":\"" );
+  stringifyToHex(szElement, nai.abtAtqa , 2 );
   strcat( szBuffer, szElement );
+  strcat( szBuffer,"\"", );
  
-  // UID
-  sprintf(szElement, ",\"UID\":\"%u %s\"", *(nai.abtUid), (nai.abtUid[0] == 0x08 ? "Random UID":""));
+  // UID (Unique Identifier)
+  strcat(szBuffer, ",\"UID\":\"");
+  stringifyToHex(szElement, nai.abtUid, nai.szUidLen );
+
   strcat( szBuffer, szElement );
+  if ( nai.abtUid[0] == 0x08 )
+    strcat( szBuffer,  " (Random UID)":""));
+  strcat(szBuffer, "\"" );
+
+  // ATS (Answer to Select)
+  // TODO if required
 
   return( strlen( szBuffer) );
 }

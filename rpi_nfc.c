@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     while(1){
 
         // make one poll attempt of NFC device to detect any target
-        if( (res= pollNFC( &nfcTarget, 1, 2 )) < 0 ) {
+        if( (res= pollNFC( &nfcTarget, 1, 1 )) < 0 ) {
             error("polling NFC device failed");
         } 
         else if ( res > 0 ) {
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
                 } // else read OK
             } // else sent OK
         } // else if res > 0 - we polled a target
-        // else no target detected, continue
+        // else res ==0, i.e. no target detected, just continue
 
         delay( POLL_INTERVAL ); // wait half a second before polling again
     } // while(1)

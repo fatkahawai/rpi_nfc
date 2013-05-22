@@ -25,11 +25,11 @@
 #define LIST_SIZE 5
 
 char *szJSONstringList[] = {
-    "{\"ID\":\"03\",\"tag\":\"Hello World!\"}",
-    "{\"ID\": 4, \"tag\": \"RPI-NFC-004\"}",
-    "{\"ID\": 5, \"tag\": \"RPI-NFC-005\"}",
-    "{\"ID\": 6, \"tag\": \"RPI-NFC-006\"}",
-    "{\"ID\": 7, \"tag\": \"no more after this one\"}",
+    "{\"nfcModulationType\":\"ISO/IEC 14443-a\",\"baudRate\":\"100\",\"ATQA\":\"0\",\"UID\":\"01 FF FF FF\"}",
+    "{\"nfcModulationType\":\"ISO/IEC 14443-b\",\"baudRate\":\"64\",\"ATQA\":\"1\",\"UID\":\"02 FF FF FF\"}",
+    "{\"nfcModulationType\":\"ISO/IEC 14443-c\",\"baudRate\":\"64000\",\"ATQA\":\"2\",\"UID\":\"03 FF FF FF\"}",
+    "{\"nfcModulationType\":\"ISO/IEC 14443-d\",\"baudRate\":\"1024\",\"ATQA\":\"3\",\"UID\":\"04 FF FF FF\"}",
+    "{\"nfcModulationType\":\"ISO/IEC 14443-e\",\"baudRate\":\"8\",\"ATQA\":\"4\",\"UID\":\"05 FF FF FF\"}",
 };
 
 // Error handler

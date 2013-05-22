@@ -16,6 +16,13 @@ Modules:
 Libraries used
 - libnfc
 
+NFC
+===
+Near Field Communication is based on in part, and is compatible with, ISO/IEC 14443
+the application will detect any RFID targets, but the MIFARE card, and standard credit cards,
+are of the ISO/IEC 1443 type. 
+http://en.wikipedia.org/wiki/ISO/IEC_14443
+
 Testing
 =======
 each module has a unit test program, which is compiled with the module and runs standalone to test the module's functions
