@@ -236,6 +236,7 @@ void stringifyToHex(char *szBuffer, const uint8_t *pbtData, const size_t szBytes
   size_t  szPos;
   char szElement[4];
 
+  strcpy(szBuffer, "");
   for (szPos = 0; szPos < szBytes; szPos++){
     if ( szPos != 0 )
       strcat(szBuffer,"-");
