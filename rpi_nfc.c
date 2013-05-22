@@ -143,6 +143,7 @@ int main(int argc, char *argv[])
     int nPortNo, n, res;
     char szBuffer[BUFFER_SIZE];
     char szPrevBuffer[BUFFER_SIZE];
+    char szReadBuffer[BUFFER_SIZE];
     char *szHostName;
     nfc_target nfcTarget;
 
@@ -183,6 +184,9 @@ int main(int argc, char *argv[])
     setNFCinterval( NFC_POLL_INTERVAL ); 
     setTCPtimeout( TCP_TIMEOUT );   
 
+    strcpy(szBuffer, "" );
+    strcpy(szPrevBuffer, "" );
+
     // session. send TCP messages to server
     while(1){
 
@@ -211,6 +215,9 @@ int main(int argc, char *argv[])
           if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){
               fprintf(stderr,"found same target card. ignoring\n");
           } else {
+            // save the JSON to compare with next event, so we dont double-scan
+            strcpy(szPrevBuffer, szBuffer );
+
             printf("\nSending JSON: %s\n", szBuffer );
 
             // send JSON string as TCP message to the server
@@ -222,17 +229,15 @@ int main(int argc, char *argv[])
                 // turnOffLED();
 
                 // wait for ACK from server
-                if( (n= readTCPmessage(szBuffer, BUFFER_SIZE)) < 0 ){
+                if( (n= readTCPmessage(szReadBuffer, BUFFER_SIZE)) < 0 ){
                     fprintf(stderr,"ERROR reading from socket. retrying\n");
                 } else {
-                    if( strcmp(&szBuffer[3], "{\"msg\":\"ACK\"}") == 0 )
+                    if( strcmp(&szReadBuffer[3], "{\"msg\":\"ACK\"}") == 0 )
                         printf("ACK received from server\n");
                     else printf("ERROR - expected 'ACK'. Received %d bytes from server: %s\n",
-                                n, szBuffer);
+                                n, szReadBuffer);
                 } // else read OK
             } // else sent OK
-            // save the JSON to compare with next event, so we dont double-scan
-            strcpy(szPrevBuffer, szBuffer );
 
           } // else not a repeat tag so can send
         } // else if res > 0 - we polled a target

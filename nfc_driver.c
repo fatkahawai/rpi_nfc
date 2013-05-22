@@ -234,9 +234,14 @@ int constructJSONstringNFC( const nfc_target nfcTarget, char *szBuffer, int nBuf
 void stringifyToHex(char *szBuffer, const uint8_t *pbtData, const size_t szBytes )
 {
   size_t  szPos;
+  char szElement[4];
 
-  for (szPos = 0; szPos < szBytes; szPos++)
-    sprintf(szBuffer, "%02X-", pbtData[szPos]); 
+  for (szPos = 0; szPos < szBytes; szPos++){
+    if ( szPos != 0 )
+      strcat(szBuffer,"-")
+    sprintf(szElement, "%02X", pbtData[szPos]); 
+    strcat(szBuffer, szElement);
+  }
 }
 // ---------------------------------------------------------------------------
 // Internal function to JSON-encode the ISO 14443A structure 
