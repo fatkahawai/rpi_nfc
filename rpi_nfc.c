@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
         // if its the same target detected again within the quarantine period, 
         // ignore it - don't send it to the server
         if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){ // same card again
-            if( !intervalTimeIsUp(LED_TIMER) ){  // its still within quarantine period
+            if( !intervalTimeIsUp(QUA_TIMER) ){  // its still within quarantine period
                 fprintf(stderr,"found same target card within quarantine period. ignoring it.\n");
                 continue;
             }
