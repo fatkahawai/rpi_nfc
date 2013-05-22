@@ -26,13 +26,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
 #include <wiringPi.h>
+
 #include "led_driver.h"
 
 
 #define LED_PIN 4
 
-static bool bLEDisOn = false;
+static bool bLEDisOn;
 
 bool isLEDon( void ){
   return( bLEDisOn );
@@ -68,35 +71,3 @@ int initLED( void ){
 
   return( 0 ) ;
 }
-
-
-/*
-// Test code
-
-int main (int argc, char *argv[])
-{
-  int pin = 0;
-  if  (argc < 2 ){
-    printf("usage: blink <pin 0 - 7>\n");
-    exit(1);
-  }
-  
-  pin = atoi(argv[1]);
-  if ((pin < 0) || (pin > 7)){
-    printf("invalid pin number - must be in range 0 to 7\n");
-    exit(1);
-  }
-
-  printf ("Raspberry Pi blink pin %d\n", pin) ;
-
-  initLED();
-  
-  for(;;)
-  {
-    turnOnLED();
-    delay(500);
-    turnOffLED();
-    delay(500);
-  }
-}
-*/
