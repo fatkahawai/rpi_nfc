@@ -253,7 +253,7 @@ static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szB
   strcat( szBuffer,",\"ATQA\":\"" );
   stringifyToHex(szElement, nai.abtAtqa , 2 );
   strcat( szBuffer, szElement );
-  strcat( szBuffer,"\"", );
+  strcat( szBuffer,"\"" );
  
   // UID (Unique Identifier)
   strcat(szBuffer, ",\"UID\":\"");
@@ -261,7 +261,7 @@ static int stringify_nfc_iso14443a_info (const nfc_iso14443a_info nai, char *szB
 
   strcat( szBuffer, szElement );
   if ( nai.abtUid[0] == 0x08 )
-    strcat( szBuffer,  " (Random UID)":""));
+    strcat( szBuffer," (Random UID)");
   strcat(szBuffer, "\"" );
 
   // ATS (Answer to Select)
