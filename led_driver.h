@@ -13,5 +13,5 @@
 int  initLED( void );
 void turnOnLED( void );
 void turnOffLED( void );
-bool isLEDon();
+bool isLEDon( void );
 

@@ -34,6 +34,9 @@
 
 static bool bLEDisOn = false;
 
+bool isLEDon( void ){
+  return( bLEDisOn );
+}
 
 /*
  * switch ON the LED
