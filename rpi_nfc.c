@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
 {
     int nPortNo, n, res;
     char szBuffer[BUFFER_SIZE];
+    char szPrevBuffer[BUFFER_SIZE];
     char *szHostName;
     nfc_target nfcTarget;
 
@@ -195,34 +196,43 @@ int main(int argc, char *argv[])
             error("polling NFC device failed");
         } 
         else if ( res > 0 ) {
-            // display results from NFC target device
-            print_nfc_target ( nfcTarget, true );
+          // display results from NFC target device
+          print_nfc_target ( nfcTarget, true );
 
-            // blink LED
-            turnOnLED();
-            setLEDinterval( LED_ON_INTERVAL );
+          // blink LED
+          turnOnLED();
+          setLEDinterval( LED_ON_INTERVAL );
 
-            if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
-                error("construct JSON string failed");
+          // convert into a JSON string
+          if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
+            error("construct JSON string failed");
 
+          // if its not the same target detected again, send it to the server
+          if(  strcmp( szBuffer, szPrevBuffer ) != 0 ){
             printf("\nSending JSON: %s\n", szBuffer );
 
+            // send JSON string as TCP message to the server
             if( sendTCPmessage( szBuffer ) <= 0 ){
                 fprintf(stderr,"ERROR writing to socket. retrying\n");
-            } else{ // get the ACK from the server
+            } else{ 
+                // 
+                // delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
+                // turnOffLED();
 
-                delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
-                turnOffLED();
-
+                // wait for ACK from server
                 if( (n= readTCPmessage(szBuffer, BUFFER_SIZE)) < 0 ){
                     fprintf(stderr,"ERROR reading from socket. retrying\n");
                 } else {
-                    if( strcmp(szBuffer, "ACK") == 0 )
+                    if( strcmp(&szBuffer[3], "{\"msg\":\"ACK\"}") == 0 )
                         printf("ACK received from server\n");
                     else printf("ERROR - expected 'ACK'. Received %d bytes from server: %s\n",
                                 n, szBuffer);
                 } // else read OK
             } // else sent OK
+            // save the JSON to compare with next event, so we dont double-scan
+            strcpy(szPrevBuffer, szBuffer );
+
+          } // if not a repeat tag
         } // else if res > 0 - we polled a target
         // else res ==0, i.e. no target detected, just continue
       } // if
