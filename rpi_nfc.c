@@ -57,14 +57,14 @@ void setInterval (  timer_type eTimerID, long int lMilliseconds ){
 // ---------------------------------------------------------------------------
 // set timer for async LED blink delay
 // 
-void setLEDInterval ( long int lMilliseconds ){
+void setLEDinterval ( long int lMilliseconds ){
     setInterval( LED_TIMER, lMilliseconds );
 }
 
 // ---------------------------------------------------------------------------
 // set timer for async LED blink delay
 // 
-void setNFCInterval ( long int lMilliseconds ){
+void setNFCinterval ( long int lMilliseconds ){
     setInterval( NFC_TIMER, lMilliseconds );
 }
 
