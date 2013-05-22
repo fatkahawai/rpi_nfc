@@ -41,7 +41,7 @@ void stop_polling (int sig)
 {
   (void) sig;
 
-  printf("\nNFC polling aborted\n");
+  fprintf(stderr,"\nNFC polling aborted by user\n");
   if (pnd)
     nfc_abort_command (pnd);
   exit (EXIT_FAILURE);
@@ -58,7 +58,7 @@ int initNFC(void){
   pnd = nfc_open (NULL, NULL);
 
   if (pnd == NULL) {
-    ERR ("%s", "ERROR: Unable to open NFC device.");
+    fprintf(stderr, "ERROR: Unable to open NFC device\n");
     return(-1); // exit (EXIT_FAILURE);
   }
 
@@ -70,7 +70,7 @@ int initNFC(void){
   // Enable field so more power consuming cards can power themselves up
   // nfc_configure (pnd, NDO_ACTIVATE_FIELD, true);
 
-  printf ("NFC reader: %s opened\n", nfc_device_get_name (pnd));
+  printf("NFC reader: %s opened\n", nfc_device_get_name (pnd));
 
   if (signal (SIGINT, stop_polling) == SIG_ERR)   // set interupt handler on Ctl-C 
     perror("ERROR: can't catch SIGINT");
@@ -78,7 +78,7 @@ int initNFC(void){
   // Display libnfc version
   const char *acLibnfcVersion = nfc_version ();
 
-  printf ("using libnfc %s\n", acLibnfcVersion);
+  printf ("using libnfc %s\n\n", acLibnfcVersion);
 
   return(0);
 } // initNFC
@@ -108,10 +108,10 @@ int pollNFC( nfc_target *pTarget , int nPolls, int nInterval ){
 
   if ((res = nfc_initiator_poll_target (pnd, nmModulations, szModulations, uiPollNr, uiPeriod, pTarget))  < 0) {
     if( res == -90 )
-      res = 0; // return code signifying no target found
+      res = 0; // return code signifying no target found - not an error
     else{
       nfc_perror (pnd, "nfc_initiator_poll_target");
-      fprintf(stderr,"result %d", res);
+      fprintf(stderr,"return value %d\n", res);
       // nfc_close (pnd);
       // nfc_exit (NULL);
     }

@@ -197,61 +197,68 @@ int main(int argc, char *argv[])
             turnOffLED();
 
       if( intervalTimeIsUp( NFC_TIMER) ) {
+
         // make one poll attempt of NFC device to detect any target
         if( (res= pollNFC( &nfcTarget, 1, 1 )) < 0 ) {
-            error("polling NFC device failed");
+            fprintf(stderr,"Non-fatal error - polling NFC device failed");
+            continue;
         } 
-        else if ( res > 0 ) {
-            // display results from NFC target device
-            print_nfc_target ( nfcTarget, true );
 
-            // blink LED
-            turnOnLED();
-            setLEDinterval( LED_ON_INTERVAL );
+        if( res == 0 )  // no target card detected
+            continue;
 
-            // convert into a JSON string
-            if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 )
-                error("construct JSON string failed");
+        // a target card was detected, process the transaction
 
-            // if its the same target detected again within the quarantine period, 
-            // ignore it - don't send it to the server
-            if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){ // same card again
-                if( !intervalTimeIsUp(LED_TIMER) ){  // its still within quarantine period
-                    fprintf(stderr,"found same target card within quarantine period. ignoring it.\n");
-                    continue;
-                }
-            } 
-            // save the JSON string to compare with the next card event, 
-            // so we dont double-scan a card
-            strcpy(szPrevBuffer, szBuffer );
-            setInterval( QUA_TIMER, NFC_QUARANTINE_INTERVAL );
+        // print detailed results from NFC target device to console
+        print_nfc_target ( nfcTarget, true );
 
-            printf("\nSending JSON: %s\n", szBuffer );
+        // convert into a JSON string
+        if( constructJSONstringNFC( nfcTarget, szBuffer, BUFFER_SIZE ) <= 0 ){
+            fprintf(stderr,"Non-fatal Error - construct JSON string failed");
+            continue;
+        }
 
-            // send JSON string as TCP message to the server
-            if( sendTCPmessage( szBuffer ) <= 0 ){
-                fprintf(stderr,"ERROR writing to socket. retrying\n");
-            } else{ 
-                // 
-                // delay( LED_ON_INTERVAL ); // wait for ACK then turn LED off
-                // turnOffLED();
+        // if its the same target detected again within the quarantine period, 
+        // ignore it - don't send it to the server
+        if(  strcmp( szBuffer, szPrevBuffer ) == 0 ){ // same card again
+            if( !intervalTimeIsUp(LED_TIMER) ){  // its still within quarantine period
+                fprintf(stderr,"found same target card within quarantine period. ignoring it.\n");
+                continue;
+            }
+        } 
+        // save the JSON string to compare with the next card event, 
+        // so we dont double-scan a card
+        strcpy(szPrevBuffer, szBuffer );
+        setInterval( QUA_TIMER, NFC_QUARANTINE_INTERVAL );
 
-                // wait for ACK from server
-                if( (n= readTCPmessage(szReadBuffer, BUFFER_SIZE)) < 0 ){
-                    fprintf(stderr,"ERROR reading from socket. retrying\n");
-                } else {
-                    if( strcmp(&szReadBuffer[3], "{\"msg\":\"ACK\"}") == 0 )
-                        printf("ACK received from server\n");
-                    else printf("ERROR - expected 'ACK'. Received %d bytes from server: %s\n",
-                                n, szReadBuffer);
-                } // else read OK
-            } // else sent OK
+        printf("\nSending JSON: %s\n", szBuffer );
 
-          } // else not a repeat tag so can send
-        } // else if res > 0 - we polled a target
-        // else res ==0, i.e. no target detected, just continue
-      } // if
-        //delay( POLL_INTERVAL ); // wait half a second before polling again
+        // send JSON string as TCP message to the server
+        if( sendTCPmessage( szBuffer ) <= 0 ){
+            fprintf(stderr,"Non-fatal Error writing to socket. retrying\n");
+            continue;
+        }   
+
+        // blink LED to acknowledge successfully recorded transaction to user
+        turnOnLED();
+        setLEDinterval( LED_ON_INTERVAL );
+
+        // wait for ACK from server
+        // NB socket in tcp_client.c is NOT initialized for non-blocking read !
+        // setInterval( TCP_TIMER, TCP_TIMEOUT );
+
+        if( (n= readTCPmessage(szReadBuffer, BUFFER_SIZE)) < 0 ){
+            fprintf(stderr,"Non-fatal Error reading from socket. (ACK not received). retrying.\n");
+            continue;
+        }            
+        else if( strcmp(&szReadBuffer[3], "{\"msg\":\"ACK\"}") == 0 )
+            fprintf(stderr, "ACK received from server\n");
+        else 
+            fprintf(stderr, "Non-fatal Error - expected 'ACK' msg, but received %d bytes from server: %s\n",
+                    n, szReadBuffer);
+
+        } // if NFC poll interval time is up - poll NFC device
+
     } // while(1)
 
 
