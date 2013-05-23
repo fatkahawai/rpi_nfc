@@ -13,3 +13,7 @@ Fingerprinting based on ATQA & SAK values:
 * Mifare Classic 1K
 * Mifare Plus (4-byte UID) 2K SL1
 * SmartMX with Mifare 1K emulation
+
+============================
+UID in decimal is 1561841699
+============================

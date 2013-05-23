@@ -246,7 +246,8 @@ int main(int argc, char *argv[])
         // wait for ACK from server
         // NB socket in tcp_client.c is NOT initialized for non-blocking read !
         // setInterval( TCP_TIMER, TCP_TIMEOUT );
-
+        /* TODO: sometimes after a period of downtime, the RPi doesnt get the ACK 
+           so hangs in the read function. so i've disabled reading the ACK.
         if( (n= readTCPmessage(szReadBuffer, BUFFER_SIZE)) < 0 ){
             fprintf(stderr,"Non-fatal Error reading from socket. (ACK not received). retrying.\n");
             continue;
@@ -256,7 +257,7 @@ int main(int argc, char *argv[])
         else 
             fprintf(stderr, "Non-fatal Error - expected 'ACK' msg, but received %d bytes from server: %s\n",
                     n, szReadBuffer);
-
+        */
         } // if NFC poll interval time is up - poll NFC device
 
     } // while(1)

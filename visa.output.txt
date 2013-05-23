@@ -25,3 +25,6 @@ Fingerprinting based on ATQA & SAK values:
 * JCOP31 v2.3.1
 * SmartMX with Mifare 1K emulation
 
+===========================
+UID in decimal is 522838194
+===========================
